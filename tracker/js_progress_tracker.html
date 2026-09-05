@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS Progress Tracker — Chai aur JavaScript</title>
+<style>
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a25;
+    --bg-card-hover: #222230;
+    --border: #2a2a3a;
+    --text-primary: #e8e8f0;
+    --text-secondary: #a0a0b8;
+    --text-muted: #6b6b80;
+    --accent-green: #22c55e;
+    --accent-green-dim: #16a34a;
+    --accent-purple: #a855f7;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 260px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 100;
+    transition: var(--transition);
+  }
+  .sidebar-header {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+  }
+  .logo-sub { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+  .nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    font-weight: 500;
+    transition: var(--transition);
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+  .nav-item.active { background: var(--bg-card); color: var(--accent-purple); }
+  .nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 20px; background: var(--accent-purple); border-radius: 0 3px 3px 0;
+  }
+  .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px;
+  }
+  .btn-sidebar {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-secondary); font-size: 0.8rem;
+    cursor: pointer; transition: var(--transition); font-weight: 500;
+  }
+  .btn-sidebar:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--accent-purple); }
+
+  .main {
+    flex: 1; margin-left: 260px;
+    padding: 28px 32px;
+    max-width: calc(100vw - 260px);
+  }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px;
+  }
+  .page-title { font-size: 1.6rem; font-weight: 700; }
+  .page-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 2px; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .search-box { position: relative; }
+  .search-box input {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px 10px 38px; color: var(--text-primary); font-size: 0.9rem;
+    width: 260px; outline: none; transition: var(--transition);
+  }
+  .search-box input:focus { border-color: var(--accent-purple); }
+  .search-box::before {
+    content: '🔍'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 0.85rem; opacity: 0.6;
+  }
+  .btn {
+    padding: 10px 18px; border-radius: 10px; border: none; font-size: 0.85rem;
+    font-weight: 600; cursor: pointer; transition: var(--transition); display: inline-flex;
+    align-items: center; gap: 6px;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); color: white; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,0.35); }
+  .btn-success { background: var(--accent-green); color: white; }
+  .btn-success:hover { background: var(--accent-green-dim); }
+  .btn-danger { background: var(--accent-red); color: white; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+  .btn-ghost:hover { border-color: var(--accent-purple); color: var(--text-primary); }
+  .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: var(--transition);
+  }
+  .card:hover { border-color: #3a3a50; }
+  .card-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+  .card-title { font-size: 1rem; font-weight: 600; }
+  .card-subtitle { font-size: 0.8rem; color: var(--text-muted); }
+
+  .grid { display: grid; gap: 20px; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid-4 { grid-template-columns: 1fr; } }
+
+  .hero-stats {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;
+  }
+  .progress-ring-container {
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    padding: 30px;
+  }
+  .progress-ring {
+    position: relative; width: 180px; height: 180px;
+  }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+  .progress-ring-fill {
+    fill: none; stroke: url(#grad1); stroke-width: 10; stroke-linecap: round;
+    stroke-dasharray: 502; stroke-dashoffset: 502;
+    transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .progress-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .progress-percent { font-size: 2.4rem; font-weight: 800; background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .progress-label { font-size: 0.8rem; color: var(--text-muted); }
+  .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .stat-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-value { font-size: 1.6rem; font-weight: 700; }
+  .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+  .stat-card:nth-child(1) .stat-value { color: var(--accent-blue); }
+  .stat-card:nth-child(2) .stat-value { color: var(--accent-green); }
+  .stat-card:nth-child(3) .stat-value { color: var(--accent-orange); }
+  .stat-card:nth-child(4) .stat-value { color: var(--accent-purple); }
+
+  .streak-banner {
+    background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(59,130,246,0.1));
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .streak-info { display: flex; align-items: center; gap: 14px; }
+  .streak-icon { font-size: 2rem; }
+  .streak-text { font-size: 1.1rem; font-weight: 700; }
+  .streak-sub { color: var(--text-muted); font-size: 0.85rem; }
+  .last-lesson {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .last-lesson-info { display: flex; align-items: center; gap: 12px; }
+  .last-lesson-title { font-weight: 600; }
+  .last-lesson-date { font-size: 0.8rem; color: var(--text-muted); }
+
+  .continue-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    color: white; padding: 14px 24px; border-radius: 12px;
+    font-weight: 700; font-size: 1rem; cursor: pointer; border: none;
+    transition: var(--transition); text-decoration: none;
+  }
+  .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(168,85,247,0.35); }
+
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .filters {
+    display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-select {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 14px; color: var(--text-primary); font-size: 0.85rem; outline: none;
+    cursor: pointer;
+  }
+  .filter-select:focus { border-color: var(--accent-purple); }
+
+  .lesson-list { display: flex; flex-direction: column; gap: 10px; }
+  .lesson-item {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 16px;
+    transition: var(--transition); cursor: pointer;
+  }
+  .lesson-item:hover { border-color: #3a3a50; background: var(--bg-card-hover); }
+  .lesson-number {
+    width: 36px; height: 36px; border-radius: 10px; background: var(--bg-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0;
+  }
+  .lesson-item.completed .lesson-number { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+  .lesson-item.in-progress .lesson-number { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .lesson-content { flex: 1; min-width: 0; }
+  .lesson-title { font-weight: 600; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lesson-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .lesson-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .status-badge {
+    padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .status-not-started { background: rgba(107,107,128,0.15); color: var(--text-muted); }
+  .status-in-progress { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .status-completed { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+  .lesson-btn {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-secondary); font-size: 0.78rem;
+    cursor: pointer; transition: var(--transition); font-weight: 500;
+  }
+  .lesson-btn:hover { border-color: var(--accent-purple); color: var(--accent-purple); }
+  .lesson-btn.completed { background: var(--accent-green); color: white; border-color: var(--accent-green); }
+  .lesson-btn.completed:hover { background: var(--accent-green-dim); }
+
+  .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .topic-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; transition: var(--transition); cursor: pointer;
+  }
+  .topic-card:hover { border-color: var(--accent-purple); transform: translateY(-2px); }
+  .topic-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .topic-name { font-weight: 700; font-size: 1.05rem; }
+  .topic-count { font-size: 0.75rem; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 10px; border-radius: 20px; }
+  .topic-bar-bg { height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+  .topic-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .topic-stats { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); }
+
+  .item-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; transition: var(--transition);
+  }
+  .item-card:hover { border-color: #3a3a50; }
+  .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .item-name { font-weight: 700; font-size: 1.05rem; }
+  .difficulty-easy { color: var(--accent-green); }
+  .difficulty-medium { color: var(--accent-orange); }
+  .difficulty-hard { color: var(--accent-red); }
+  .item-desc { color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 14px; }
+  .item-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .item-meta span { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+  .item-actions { display: flex; gap: 8px; }
+
+  .note-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; transition: var(--transition); position: relative;
+  }
+  .note-card:hover { border-color: #3a3a50; }
+  .note-topic { font-size: 0.75rem; color: var(--accent-purple); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .note-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; }
+  .note-content { color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap; }
+  .note-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 12px; }
+  .note-delete { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; padding: 4px; }
+  .note-delete:hover { color: var(--accent-red); }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 1000; display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 18px;
+    width: 100%; max-width: 520px; max-height: 85vh; overflow-y: auto;
+    box-shadow: var(--shadow); animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-size: 1.2rem; font-weight: 700; }
+  .modal-close { background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; padding: 4px; }
+  .modal-close:hover { color: var(--text-primary); }
+  .modal-body { padding: 20px 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+  .form-input, .form-textarea, .form-select {
+    width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 14px; color: var(--text-primary); font-size: 0.9rem; outline: none;
+    transition: var(--transition); font-family: var(--font-sans);
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent-purple); }
+  .form-textarea { min-height: 100px; resize: vertical; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+  .chart-container { position: relative; height: 220px; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 180px; padding-bottom: 30px; border-bottom: 1px solid var(--border); }
+  .bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar { width: 100%; background: linear-gradient(to top, var(--accent-purple), var(--accent-blue)); border-radius: 4px 4px 0 0; transition: height 0.6s ease; min-height: 4px; }
+  .bar-label { font-size: 0.7rem; color: var(--text-muted); }
+  .bar-value { font-size: 0.7rem; color: var(--text-primary); font-weight: 600; }
+
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px;
+    animation: toastIn 0.3s ease; min-width: 280px;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  .toast-success { border-left: 3px solid var(--accent-green); }
+  .toast-error { border-left: 3px solid var(--accent-red); }
+  .toast-info { border-left: 3px solid var(--accent-blue); }
+
+  .sidebar-toggle {
+    display: none; position: fixed; top: 16px; left: 16px; z-index: 101;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px; color: var(--text-primary); font-size: 1.2rem; cursor: pointer;
+  }
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99;
+  }
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay.active { display: block; }
+    .main { margin-left: 0; max-width: 100vw; padding: 20px; padding-top: 60px; }
+    .sidebar-toggle { display: block; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .search-box input { width: 180px; }
+    .topbar { flex-direction: column; gap: 14px; align-items: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .stat-cards { grid-template-columns: 1fr 1fr; }
+    .lesson-item { flex-wrap: wrap; }
+    .lesson-actions { width: 100%; justify-content: flex-end; margin-top: 8px; }
+  }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state-title { font-size: 1.2rem; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+
+  .confirm-text { color: var(--text-secondary); margin-bottom: 16px; }
+  .confirm-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+
+  code, .code { font-family: var(--font-mono); font-size: 0.9em; background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; }
+
+  .scroll-top {
+    position: fixed; bottom: 24px; right: 24px; z-index: 500;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 50%;
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-primary); font-size: 1.2rem;
+    transition: var(--transition); opacity: 0; pointer-events: none;
+  }
+  .scroll-top.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top:hover { background: var(--accent-purple); color: white; border-color: var(--accent-purple); }
+
+  .topic-color-0 { background: linear-gradient(90deg, #22c55e, #16a34a); }
+  .topic-color-1 { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+  .topic-color-2 { background: linear-gradient(90deg, #a855f7, #9333ea); }
+  .topic-color-3 { background: linear-gradient(90deg, #f59e0b, #d97706); }
+  .topic-color-4 { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+  .topic-color-5 { background: linear-gradient(90deg, #ec4899, #db2777); }
+  .topic-color-6 { background: linear-gradient(90deg, #84cc16, #65a30d); }
+  .topic-color-7 { background: linear-gradient(90deg, #f97316, #ea580c); }
+  .topic-color-8 { background: linear-gradient(90deg, #14b8a6, #0d9488); }
+  .topic-color-9 { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+  .topic-color-10 { background: linear-gradient(90deg, #ef4444, #dc2626); }
+  .topic-color-11 { background: linear-gradient(90deg, #6366f1, #4f46e5); }
+  .topic-color-12 { background: linear-gradient(90deg, #10b981, #059669); }
+  .topic-color-13 { background: linear-gradient(90deg, #eab308, #ca8a04); }
+  .topic-color-14 { background: linear-gradient(90deg, #f43f5e, #e11d48); }
+  .topic-color-15 { background: linear-gradient(90deg, #06b6d4, #0891b2); }
+  .topic-color-16 { background: linear-gradient(90deg, #a855f7, #9333ea); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
+
+<button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <div>
+          <div>JS Tracker</div>
+          <div class="logo-sub">Chai aur JavaScript</div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" data-section="lessons" onclick="showSection('lessons')">
+        <span class="nav-icon">📚</span> Lessons
+      </div>
+      <div class="nav-item" data-section="topics" onclick="showSection('topics')">
+        <span class="nav-icon">🗂️</span> Topics
+      </div>
+      <div class="nav-item" data-section="practice" onclick="showSection('practice')">
+        <span class="nav-icon">💻</span> Practice
+      </div>
+      <div class="nav-item" data-section="projects" onclick="showSection('projects')">
+        <span class="nav-icon">🚀</span> Projects
+      </div>
+      <div class="nav-item" data-section="notes" onclick="showSection('notes')">
+        <span class="nav-icon">📝</span> Notes
+      </div>
+      <div class="nav-item" data-section="stats" onclick="showSection('stats')">
+        <span class="nav-icon">📈</span> Statistics
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-sidebar" onclick="exportData()">⬇ Export</button>
+      <button class="btn-sidebar" onclick="document.getElementById('importFile').click()">⬆ Import</button>
+      <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="section active">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Your JavaScript learning journey at a glance</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" id="continueLearningBtn" onclick="continueLearning()">
+            ▶ Continue Learning
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="card progress-ring-container">
+          <div class="progress-ring">
+            <svg width="180" height="180" viewBox="0 0 180 180">
+              <circle class="progress-ring-bg" cx="90" cy="90" r="80"/>
+              <circle class="progress-ring-fill" id="progressCircle" cx="90" cy="90" r="80"/>
+            </svg>
+            <div class="progress-text">
+              <div class="progress-percent" id="overallPercent">0%</div>
+              <div class="progress-label">Completed</div>
+            </div>
+          </div>
+        </div>
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Lessons</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statCompleted">0</div>
+            <div class="stat-label">Completed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statInProgress">0</div>
+            <div class="stat-label">In Progress</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statRemaining">0</div>
+            <div class="stat-label">Remaining</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="streak-banner">
+        <div class="streak-info">
+          <div class="streak-icon">🔥</div>
+          <div>
+            <div class="streak-text" id="streakText">0 Day Streak</div>
+            <div class="streak-sub" id="streakSub">Start learning today to build your streak!</div>
+          </div>
+        </div>
+        <div class="streak-sub" id="totalDaysText">0 total learning days</div>
+      </div>
+
+      <div class="last-lesson" id="lastLessonBanner" style="display:none;">
+        <div class="last-lesson-info">
+          <div>✅</div>
+          <div>
+            <div class="last-lesson-title" id="lastLessonTitle">—</div>
+            <div class="last-lesson-date" id="lastLessonDate">—</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showSection('lessons')">View All</button>
+      </div>
+
+      <div class="grid grid-3" style="margin-top: 20px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Practice Progress</div>
+          </div>
+          <div style="font-size: 2rem; font-weight: 800; color: var(--accent-blue);" id="practicePercent">0%</div>
+          <div class="card-subtitle" style="margin-top:4px;" id="practiceSub">0 of 0 completed</div>
+          <div class="topic-bar-bg" style="margin-top:14px;">
+            <div class="topic-bar-fill topic-color-1" id="practiceBar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Projects</div>
+          </div>
+          <div style="font-size: 2rem; font-weight: 800; color: var(--accent-purple);" id="projectPercent">0%</div>
+          <div class="card-subtitle" style="margin-top:4px;" id="projectSub">0 of 0 completed</div>
+          <div class="topic-bar-bg" style="margin-top:14px;">
+            <div class="topic-bar-fill topic-color-2" id="projectBar" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Notes</div>
+          </div>
+          <div style="font-size: 2rem; font-weight: 800; color: var(--accent-cyan);" id="notesCount">0</div>
+          <div class="card-subtitle" style="margin-top:4px;">Total notes saved</div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:14px;" onclick="showSection('notes')">View Notes</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LESSONS -->
+    <section id="lessons" class="section">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Lesson Tracker</div>
+          <div class="page-subtitle">Track your progress through all lessons</div>
+        </div>
+        <div class="topbar-actions">
+          <div class="search-box">
+            <input type="text" id="lessonSearch" placeholder="Search lessons..." oninput="filterLessons()">
+          </div>
+        </div>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="filterStatus" onchange="filterLessons()">
+          <option value="all">All Status</option>
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select class="filter-select" id="filterTopic" onchange="filterLessons()">
+          <option value="all">All Topics</option>
+        </select>
+        <select class="filter-select" id="sortLessons" onchange="filterLessons()">
+          <option value="number">Sort: Lesson #</option>
+          <option value="status">Sort: Status</option>
+          <option value="title">Sort: Title</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="openAddLessonModal()">+ Add Lesson</button>
+      </div>
+      <div class="lesson-list" id="lessonList"></div>
+    </section>
+
+    <!-- TOPICS -->
+    <section id="topics" class="section">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Topics</div>
+          <div class="page-subtitle">Progress by JavaScript topic</div>
+        </div>
+      </div>
+      <div class="topic-grid" id="topicGrid"></div>
+    </section>
+
+    <!-- PRACTICE -->
+    <section id="practice" class="section">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Practice Tracker</div>
+          <div class="page-subtitle">Coding problems and exercises</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="openPracticeModal()">+ Add Practice</button>
+        </div>
+      </div>
+      <div class="filters">
+        <select class="filter-select" id="filterPracticeStatus" onchange="renderPractice()">
+          <option value="all">All Status</option>
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select class="filter-select" id="filterPracticeDifficulty" onchange="renderPractice()">
+          <option value="all">All Difficulties</option>
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+      <div class="grid grid-2" id="practiceList"></div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects" class="section">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Projects</div>
+          <div class="page-subtitle">Track your JavaScript projects</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="openProjectModal()">+ Add Project</button>
+        </div>
+      </div>
+      <div class="grid grid-2" id="projectList"></div>
+    </section>
+
+    <!-- NOTES -->
+    <section id="notes" class="section">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Notes</div>
+          <div class="page-subtitle">Save important JavaScript concepts</div>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="openNoteModal()">+ Add Note</button>
+        </div>
+      </div>
+      <div class="grid grid-2" id="notesList"></div>
+    </section>
+
+    <!-- STATISTICS -->
+    <section id="stats" class="section">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Statistics</div>
+          <div class="page-subtitle">Detailed insights into your learning</div>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Lessons per Week</div>
+          </div>
+          <div class="chart-container" id="weeklyChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Topic Completion</div>
+          </div>
+          <div class="chart-container" id="topicChart"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top: 20px;">
+        <div class="card-header">
+          <div class="card-title">Learning Activity</div>
+        </div>
+        <div class="chart-container" id="activityChart" style="height: 160px;"></div>
+      </div>
+      <div class="grid grid-4" style="margin-top: 20px;">
+        <div class="stat-card">
+          <div class="stat-value" id="statTotalLessons2">0</div>
+          <div class="stat-label">Total Lessons</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statPractice2">0</div>
+          <div class="stat-label">Practice Tasks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statProjects2">0</div>
+          <div class="stat-label">Projects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statNotes2">0</div>
+          <div class="stat-label">Notes</div>
+        </div>
+      </div>
+      <div style="margin-top: 24px; text-align: center;">
+        <button class="btn btn-danger" onclick="confirmReset()">🗑 Reset All Progress</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="lessonModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="lessonModalTitle">Lesson Notes</div>
+      <button class="modal-close" onclick="closeModal('lessonModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="lessonModalStatus" onchange="updateLessonStatusFromModal()">
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Personal Notes</label>
+        <textarea class="form-textarea" id="lessonModalNotes" placeholder="Write your notes here..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">YouTube Link</label>
+        <input type="text" class="form-input" id="lessonModalLink" readonly>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('lessonModal')">Close</button>
+      <button class="btn btn-primary" onclick="saveLessonModal()">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addLessonModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Custom Lesson</div>
+      <button class="modal-close" onclick="closeModal('addLessonModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Lesson Title</label>
+        <input type="text" class="form-input" id="addLessonTitle" placeholder="e.g., Advanced Closures">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Topic</label>
+        <select class="form-select" id="addLessonTopic"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">YouTube Link (optional)</label>
+        <input type="text" class="form-input" id="addLessonLink" placeholder="https://youtube.com/...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addLessonModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewLesson()">Add Lesson</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="practiceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="practiceModalTitle">Add Practice Task</div>
+      <button class="modal-close" onclick="closeModal('practiceModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="practiceModalId">
+      <div class="form-group">
+        <label class="form-label">Problem / Project Name</label>
+        <input type="text" class="form-input" id="practiceModalName" placeholder="e.g., Build a Todo App">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Difficulty</label>
+        <select class="form-select" id="practiceModalDifficulty">
+          <option value="Easy">Easy</option>
+          <option value="Medium">Medium</option>
+          <option value="Hard">Hard</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="practiceModalStatus">
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-textarea" id="practiceModalNotes" placeholder="Your approach, learnings, etc."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">GitHub / Project Link</label>
+        <input type="text" class="form-input" id="practiceModalLink" placeholder="https://github.com/...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('practiceModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePractice()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="projectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="projectModalTitle">Add Project</div>
+      <button class="modal-close" onclick="closeModal('projectModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="projectModalId">
+      <div class="form-group">
+        <label class="form-label">Project Name</label>
+        <input type="text" class="form-input" id="projectModalName" placeholder="e.g., Weather Dashboard">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" id="projectModalDesc" placeholder="What does this project do?"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Technologies (comma separated)</label>
+        <input type="text" class="form-input" id="projectModalTech" placeholder="HTML, CSS, JavaScript, API">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="projectModalStatus">
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Completion (%)</label>
+        <input type="number" class="form-input" id="projectModalPercent" min="0" max="100" value="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">GitHub Link</label>
+        <input type="text" class="form-input" id="projectModalGithub" placeholder="https://github.com/...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Live Demo Link</label>
+        <input type="text" class="form-input" id="projectModalDemo" placeholder="https://...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('projectModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="noteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="noteModalTitle">Add Note</div>
+      <button class="modal-close" onclick="closeModal('noteModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="noteModalId">
+      <div class="form-group">
+        <label class="form-label">Topic</label>
+        <input type="text" class="form-input" id="noteModalTopic" placeholder="e.g., Closures">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="noteModalTitleInput" placeholder="e.g., How Closures Work">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content</label>
+        <textarea class="form-textarea" id="noteModalContent" placeholder="Write your note here..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('noteModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width: 400px;">
+    <div class="modal-header">
+      <div class="modal-title" id="confirmTitle">Confirm</div>
+      <button class="modal-close" onclick="closeModal('confirmModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" id="confirmText">Are you sure?</p>
+      <div class="confirm-buttons">
+        <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Cancel</button>
+        <button class="btn btn-danger" id="confirmBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const DEFAULT_TOPICS = [
+  "JavaScript Basics",
+  "Variables & Data Types",
+  "Strings & Numbers",
+  "Arrays & Objects",
+  "Control Flow",
+  "Iterations",
+  "Functions",
+  "Scope & Closures",
+  "DOM",
+  "Events",
+  "Asynchronous JavaScript",
+  "Promises",
+  "Async/Await",
+  "APIs & Fetch",
+  "OOP & Classes",
+  "Advanced JavaScript",
+  "Projects"
+];
+
+const DEFAULT_LESSONS = [
+  { id: 1, title: "Introduction to JavaScript | chai aur #javascript", topic: "JavaScript Basics", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37", status: "not-started", notes: "", dateCompleted: null },
+  { id: 2, title: "Setting up environment in local machine for Javascript", topic: "JavaScript Basics", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=2", status: "not-started", notes: "", dateCompleted: null },
+  { id: 3, title: "Variables in JavaScript | let, const & var", topic: "Variables & Data Types", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=3", status: "not-started", notes: "", dateCompleted: null },
+  { id: 4, title: "Data Types in JavaScript", topic: "Variables & Data Types", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=4", status: "not-started", notes: "", dateCompleted: null },
+  { id: 5, title: "Data Types Conversion in JavaScript", topic: "Variables & Data Types", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=5", status: "not-started", notes: "", dateCompleted: null },
+  { id: 6, title: "Why string to number conversion is confusing", topic: "Strings & Numbers", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=6", status: "not-started", notes: "", dateCompleted: null },
+  { id: 7, title: "Comparison of datatypes in JavaScript", topic: "Strings & Numbers", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=7", status: "not-started", notes: "", dateCompleted: null },
+  { id: 8, title: "Stack and Heap memory in JavaScript", topic: "Variables & Data Types", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=8", status: "not-started", notes: "", dateCompleted: null },
+  { id: 9, title: "Strings in JavaScript", topic: "Strings & Numbers", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=9", status: "not-started", notes: "", dateCompleted: null },
+  { id: 10, title: "Number and Maths in JavaScript", topic: "Strings & Numbers", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=10", status: "not-started", notes: "", dateCompleted: null },
+  { id: 11, title: "Date and Time in JavaScript", topic: "Strings & Numbers", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=11", status: "not-started", notes: "", dateCompleted: null },
+  { id: 12, title: "Array in JavaScript", topic: "Arrays & Objects", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=12", status: "not-started", notes: "", dateCompleted: null },
+  { id: 13, title: "Array Methods in JavaScript - Part 1", topic: "Arrays & Objects", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=13", status: "not-started", notes: "", dateCompleted: null },
+  { id: 14, title: "Array Methods in JavaScript - Part 2", topic: "Arrays & Objects", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=14", status: "not-started", notes: "", dateCompleted: null },
+  { id: 15, title: "Objects in JavaScript", topic: "Arrays & Objects", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=15", status: "not-started", notes: "", dateCompleted: null },
+  { id: 16, title: "Object Methods and Destructuring", topic: "Arrays & Objects", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=16", status: "not-started", notes: "", dateCompleted: null },
+  { id: 17, title: "If-Else Statements in JavaScript", topic: "Control Flow", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=17", status: "not-started", notes: "", dateCompleted: null },
+  { id: 18, title: "Switch Statement in JavaScript", topic: "Control Flow", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=18", status: "not-started", notes: "", dateCompleted: null },
+  { id: 19, title: "Truthy and Falsy Values", topic: "Control Flow", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=19", status: "not-started", notes: "", dateCompleted: null },
+  { id: 20, title: "Nullish Coalescing Operator", topic: "Control Flow", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=20", status: "not-started", notes: "", dateCompleted: null },
+  { id: 21, title: "Ternary Operator in JavaScript", topic: "Control Flow", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=21", status: "not-started", notes: "", dateCompleted: null },
+  { id: 22, title: "For Loop in JavaScript", topic: "Iterations", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=22", status: "not-started", notes: "", dateCompleted: null },
+  { id: 23, title: "While and Do-While Loop", topic: "Iterations", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=23", status: "not-started", notes: "", dateCompleted: null },
+  { id: 24, title: "For-Of Loop in JavaScript", topic: "Iterations", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=24", status: "not-started", notes: "", dateCompleted: null },
+  { id: 25, title: "For-In Loop in JavaScript", topic: "Iterations", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=25", status: "not-started", notes: "", dateCompleted: null },
+  { id: 26, title: "ForEach Loop in JavaScript", topic: "Iterations", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=26", status: "not-started", notes: "", dateCompleted: null },
+  { id: 27, title: "Filter, Map and Reduce in JavaScript", topic: "Iterations", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=27", status: "not-started", notes: "", dateCompleted: null },
+  { id: 28, title: "Functions in JavaScript", topic: "Functions", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=28", status: "not-started", notes: "", dateCompleted: null },
+  { id: 29, title: "Function with Objects and Arrays", topic: "Functions", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=29", status: "not-started", notes: "", dateCompleted: null },
+  { id: 30, title: "Arrow Functions in JavaScript", topic: "Functions", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=30", status: "not-started", notes: "", dateCompleted: null },
+  { id: 31, title: "IIFE in JavaScript", topic: "Functions", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=31", status: "not-started", notes: "", dateCompleted: null },
+  { id: 32, title: "Scope in JavaScript", topic: "Scope & Closures", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=32", status: "not-started", notes: "", dateCompleted: null },
+  { id: 33, title: "Closures in JavaScript", topic: "Scope & Closures", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=33", status: "not-started", notes: "", dateCompleted: null },
+  { id: 34, title: "Lexical Scoping in JavaScript", topic: "Scope & Closures", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=34", status: "not-started", notes: "", dateCompleted: null },
+  { id: 35, title: "DOM Introduction in JavaScript", topic: "DOM", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=35", status: "not-started", notes: "", dateCompleted: null },
+  { id: 36, title: "DOM Selectors in JavaScript", topic: "DOM", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=36", status: "not-started", notes: "", dateCompleted: null },
+  { id: 37, title: "DOM Manipulation in JavaScript", topic: "DOM", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=37", status: "not-started", notes: "", dateCompleted: null },
+  { id: 38, title: "Events in JavaScript", topic: "Events", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=38", status: "not-started", notes: "", dateCompleted: null },
+  { id: 39, title: "Event Bubbling and Capturing", topic: "Events", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=39", status: "not-started", notes: "", dateCompleted: null },
+  { id: 40, title: "Async JavaScript Introduction", topic: "Asynchronous JavaScript", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=40", status: "not-started", notes: "", dateCompleted: null },
+  { id: 41, title: "SetTimeout and SetInterval", topic: "Asynchronous JavaScript", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=41", status: "not-started", notes: "", dateCompleted: null },
+  { id: 42, title: "Promises in JavaScript", topic: "Promises", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=42", status: "not-started", notes: "", dateCompleted: null },
+  { id: 43, title: "Promise Chaining and Error Handling", topic: "Promises", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=43", status: "not-started", notes: "", dateCompleted: null },
+  { id: 44, title: "Async/Await in JavaScript", topic: "Async/Await", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=44", status: "not-started", notes: "", dateCompleted: null },
+  { id: 45, title: "Fetch API in JavaScript", topic: "APIs & Fetch", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=45", status: "not-started", notes: "", dateCompleted: null },
+  { id: 46, title: "API Request and Response Handling", topic: "APIs & Fetch", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=46", status: "not-started", notes: "", dateCompleted: null },
+  { id: 47, title: "OOP in JavaScript", topic: "OOP & Classes", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=47", status: "not-started", notes: "", dateCompleted: null },
+  { id: 48, title: "Constructor Functions and new Keyword", topic: "OOP & Classes", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=48", status: "not-started", notes: "", dateCompleted: null },
+  { id: 49, title: "Classes in JavaScript", topic: "OOP & Classes", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=49", status: "not-started", notes: "", dateCompleted: null },
+  { id: 50, title: "Inheritance and Prototypes", topic: "OOP & Classes", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=50", status: "not-started", notes: "", dateCompleted: null },
+  { id: 51, title: "Advanced JavaScript Concepts", topic: "Advanced JavaScript", youtube: "https://www.youtube.com/watch?v=Hr5iLG7sUa0&list=PLu71SKxNbfoBuX3f4EOACle2y-tRC5Q37&index=51", status: "not-started", notes: "", dateCompleted: null }
+];
+
+const DEFAULT_PRACTICE = [
+  { id: 1, name: "Build a Counter App", difficulty: "Easy", status: "not-started", notes: "", dateCompleted: null, link: "" },
+  { id: 2, name: "Todo List with LocalStorage", difficulty: "Medium", status: "not-started", notes: "", dateCompleted: null, link: "" },
+  { id: 3, name: "Weather App using Fetch API", difficulty: "Medium", status: "not-started", notes: "", dateCompleted: null, link: "" },
+  { id: 4, name: "Password Generator", difficulty: "Easy", status: "not-started", notes: "", dateCompleted: null, link: "" },
+  { id: 5, name: "Quiz Application", difficulty: "Hard", status: "not-started", notes: "", dateCompleted: null, link: "" }
+];
+
+const DEFAULT_PROJECTS = [
+  { id: 1, name: "Personal Portfolio", description: "A responsive portfolio website showcasing your projects and skills.", tech: "HTML, CSS, JavaScript", status: "not-started", github: "", demo: "", percent: 0 },
+  { id: 2, name: "Expense Tracker", description: "Track daily expenses with charts and local storage persistence.", tech: "JavaScript, Chart.js, LocalStorage", status: "not-started", github: "", demo: "", percent: 0 },
+  { id: 3, name: "Movie Search App", description: "Search movies using OMDB API with detailed info pages.", tech: "JavaScript, Fetch API, CSS", status: "not-started", github: "", demo: "", percent: 0 }
+];
+
+const DEFAULT_NOTES = [
+  { id: 1, topic: "Variables", title: "let vs const vs var", content: "Always use const by default. Use let only when reassignment is needed. Avoid var due to function scoping issues.", dateCreated: new Date().toISOString() }
+];
+
+// ===================== STATE =====================
+let state = {
+  lessons: [],
+  practice: [],
+  projects: [],
+  notes: [],
+  topics: [],
+  learningDays: [],
+  currentStreak: 0,
+  lastActiveDate: null
+};
+
+let currentLessonId = null;
+let currentPracticeId = null;
+let currentProjectId = null;
+let currentNoteId = null;
+
+// ===================== STORAGE =====================
+function loadState() {
+  const saved = localStorage.getItem('jsTrackerState');
+  if (saved) {
+    try {
+      state = JSON.parse(saved);
+      // Ensure all arrays exist
+      if (!state.lessons) state.lessons = JSON.parse(JSON.stringify(DEFAULT_LESSONS));
+      if (!state.practice) state.practice = JSON.parse(JSON.stringify(DEFAULT_PRACTICE));
+      if (!state.projects) state.projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+      if (!state.notes) state.notes = JSON.parse(JSON.stringify(DEFAULT_NOTES));
+      if (!state.topics) state.topics = [...DEFAULT_TOPICS];
+      if (!state.learningDays) state.learningDays = [];
+      if (!state.currentStreak) state.currentStreak = 0;
+      if (!state.lastActiveDate) state.lastActiveDate = null;
+    } catch (e) {
+      initDefaultState();
+    }
+  } else {
+    initDefaultState();
+  }
+  updateStreak();
+}
+
+function initDefaultState() {
+  state = {
+    lessons: JSON.parse(JSON.stringify(DEFAULT_LESSONS)),
+    practice: JSON.parse(JSON.stringify(DEFAULT_PRACTICE)),
+    projects: JSON.parse(JSON.stringify(DEFAULT_PROJECTS)),
+    notes: JSON.parse(JSON.stringify(DEFAULT_NOTES)),
+    topics: [...DEFAULT_TOPICS],
+    learningDays: [],
+    currentStreak: 0,
+    lastActiveDate: null
+  };
+  saveState();
+}
+
+function saveState() {
+  localStorage.setItem('jsTrackerState', JSON.stringify(state));
+}
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  if (state.lastActiveDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (state.lastActiveDate === yesterday.toDateString()) {
+      state.currentStreak++;
+    } else if (state.lastActiveDate !== today) {
+      state.currentStreak = 1;
+    }
+    if (!state.learningDays.includes(today)) {
+      state.learningDays.push(today);
+    }
+    state.lastActiveDate = today;
+    saveState();
+  }
+}
+
+// ===================== UI HELPERS =====================
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.querySelector('.sidebar-overlay').classList.toggle('active');
+}
+
+function showSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+  document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+  if (window.innerWidth <= 900) toggleSidebar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderAll();
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard() {
+  const total = state.lessons.length;
+  const completed = state.lessons.filter(l => l.status === 'completed').length;
+  const inProgress = state.lessons.filter(l => l.status === 'in-progress').length;
+  const remaining = total - completed;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  document.getElementById('overallPercent').textContent = percent + '%';
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statCompleted').textContent = completed;
+  document.getElementById('statInProgress').textContent = inProgress;
+  document.getElementById('statRemaining').textContent = remaining;
+
+  const circle = document.getElementById('progressCircle');
+  const circumference = 2 * Math.PI * 80;
+  const offset = circumference - (percent / 100) * circumference;
+  circle.style.strokeDashoffset = offset;
+
+  // Streak
+  document.getElementById('streakText').textContent = state.currentStreak + ' Day' + (state.currentStreak !== 1 ? 's' : '') + ' Streak';
+  document.getElementById('streakSub').textContent = state.currentStreak > 1 ? 'Keep the momentum going! 🔥' : 'Start learning today to build your streak!';
+  document.getElementById('totalDaysText').textContent = state.learningDays.length + ' total learning days';
+
+  // Last lesson
+  const completedLessons = state.lessons.filter(l => l.status === 'completed' && l.dateCompleted).sort((a, b) => new Date(b.dateCompleted) - new Date(a.dateCompleted));
+  const banner = document.getElementById('lastLessonBanner');
+  if (completedLessons.length > 0) {
+    banner.style.display = 'flex';
+    document.getElementById('lastLessonTitle').textContent = completedLessons[0].title;
+    document.getElementById('lastLessonDate').textContent = 'Completed on ' + formatDate(completedLessons[0].dateCompleted);
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Practice
+  const pTotal = state.practice.length;
+  const pCompleted = state.practice.filter(p => p.status === 'completed').length;
+  const pPercent = pTotal > 0 ? Math.round((pCompleted / pTotal) * 100) : 0;
+  document.getElementById('practicePercent').textContent = pPercent + '%';
+  document.getElementById('practiceSub').textContent = pCompleted + ' of ' + pTotal + ' completed';
+  document.getElementById('practiceBar').style.width = pPercent + '%';
+
+  // Projects
+  const projTotal = state.projects.length;
+  const projCompleted = state.projects.filter(p => p.status === 'completed').length;
+  const projPercent = projTotal > 0 ? Math.round((projCompleted / projTotal) * 100) : 0;
+  document.getElementById('projectPercent').textContent = projPercent + '%';
+  document.getElementById('projectSub').textContent = projCompleted + ' of ' + projTotal + ' completed';
+  document.getElementById('projectBar').style.width = projPercent + '%';
+
+  // Notes
+  document.getElementById('notesCount').textContent = state.notes.length;
+}
+
+function continueLearning() {
+  const next = state.lessons.find(l => l.status !== 'completed');
+  if (next) {
+    showSection('lessons');
+    setTimeout(() => {
+      const el = document.querySelector(`[data-lesson-id="${next.id}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.borderColor = 'var(--accent-purple)';
+        setTimeout(() => el.style.borderColor = '', 2000);
+      }
+    }, 300);
+  } else {
+    showToast('All lessons completed! 🎉', 'success');
+  }
+}
+
+// ===================== LESSONS =====================
+function renderLessons() {
+  const search = document.getElementById('lessonSearch').value.toLowerCase();
+  const statusFilter = document.getElementById('filterStatus').value;
+  const topicFilter = document.getElementById('filterTopic').value;
+  const sort = document.getElementById('sortLessons').value;
+
+  let filtered = state.lessons.filter(l => {
+    if (search && !l.title.toLowerCase().includes(search)) return false;
+    if (statusFilter !== 'all' && l.status !== statusFilter) return false;
+    if (topicFilter !== 'all' && l.topic !== topicFilter) return false;
+    return true;
+  });
+
+  if (sort === 'status') {
+    const order = { 'completed': 0, 'in-progress': 1, 'not-started': 2 };
+    filtered.sort((a, b) => order[a.status] - order[b.status]);
+  } else if (sort === 'title') {
+    filtered.sort((a, b) => a.title.localeCompare(b.title));
+  } else {
+    filtered.sort((a, b) => a.id - b.id);
+  }
+
+  const container = document.getElementById('lessonList');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">No lessons found</div><p>Try adjusting your filters</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(l => {
+    const statusLabels = { 'not-started': '⬜ Not Started', 'in-progress': '🟡 In Progress', 'completed': '✅ Completed' };
+    const statusClasses = { 'not-started': 'status-not-started', 'in-progress': 'status-in-progress', 'completed': 'status-completed' };
+    const btnText = l.status === 'completed' ? '✓ Completed' : (l.status === 'in-progress' ? '⏳ In Progress' : 'Mark Done');
+    const btnClass = l.status === 'completed' ? 'completed' : '';
+    const dateStr = l.dateCompleted ? formatDate(l.dateCompleted) : '';
+    return `
+      <div class="lesson-item ${l.status.replace('-', ' ')}" data-lesson-id="${l.id}">
+        <div class="lesson-number">${l.id}</div>
+        <div class="lesson-content" onclick="openLessonModal(${l.id})">
+          <div class="lesson-title">${escapeHtml(l.title)}</div>
+          <div class="lesson-meta">${escapeHtml(l.topic)} ${dateStr ? '• Completed: ' + dateStr : ''}</div>
+        </div>
+        <div class="lesson-actions">
+          <span class="status-badge ${statusClasses[l.status]}">${statusLabels[l.status]}</span>
+          <button class="lesson-btn ${btnClass}" onclick="event.stopPropagation(); toggleLessonStatus(${l.id})">${btnText}</button>
+          <button class="lesson-btn" onclick="event.stopPropagation(); window.open('${l.youtube}', '_blank')">▶ Watch</button>
+          <button class="lesson-btn" onclick="event.stopPropagation(); openLessonModal(${l.id})">📝 Notes</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleLessonStatus(id) {
+  const lesson = state.lessons.find(l => l.id === id);
+  if (!lesson) return;
+  if (lesson.status === 'completed') {
+    lesson.status = 'not-started';
+    lesson.dateCompleted = null;
+  } else if (lesson.status === 'not-started') {
+    lesson.status = 'in-progress';
+  } else {
+    lesson.status = 'completed';
+    lesson.dateCompleted = new Date().toISOString();
+    showToast('Lesson completed! Great job! 🎉', 'success');
+  }
+  saveState();
+  renderAll();
+}
+
+function openLessonModal(id) {
+  currentLessonId = id;
+  const lesson = state.lessons.find(l => l.id === id);
+  if (!lesson) return;
+  document.getElementById('lessonModalTitle').textContent = 'Lesson ' + lesson.id + ': ' + lesson.title;
+  document.getElementById('lessonModalStatus').value = lesson.status;
+  document.getElementById('lessonModalNotes').value = lesson.notes || '';
+  document.getElementById('lessonModalLink').value = lesson.youtube;
+  openModal('lessonModal');
+}
+
+function updateLessonStatusFromModal() {
+  const lesson = state.lessons.find(l => l.id === currentLessonId);
+  if (!lesson) return;
+  const newStatus = document.getElementById('lessonModalStatus').value;
+  lesson.status = newStatus;
+  if (newStatus === 'completed' && !lesson.dateCompleted) {
+    lesson.dateCompleted = new Date().toISOString();
+  } else if (newStatus !== 'completed') {
+    lesson.dateCompleted = null;
+  }
+}
+
+function saveLessonModal() {
+  const lesson = state.lessons.find(l => l.id === currentLessonId);
+  if (!lesson) return;
+  lesson.notes = document.getElementById('lessonModalNotes').value;
+  saveState();
+  closeModal('lessonModal');
+  renderAll();
+  showToast('Notes saved!', 'success');
+}
+
+function openAddLessonModal() {
+  const select = document.getElementById('addLessonTopic');
+  select.innerHTML = state.topics.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  document.getElementById('addLessonTitle').value = '';
+  document.getElementById('addLessonLink').value = '';
+  openModal('addLessonModal');
+}
+
+function saveNewLesson() {
+  const title = document.getElementById('addLessonTitle').value.trim();
+  const topic = document.getElementById('addLessonTopic').value;
+  const link = document.getElementById('addLessonLink').value.trim();
+  if (!title) { showToast('Please enter a title', 'error'); return; }
+  const maxId = state.lessons.length > 0 ? Math.max(...state.lessons.map(l => l.id)) : 0;
+  state.lessons.push({
+    id: maxId + 1, title, topic, youtube: link || '#', status: 'not-started', notes: '', dateCompleted: null
+  });
+  saveState();
+  closeModal('addLessonModal');
+  renderAll();
+  showToast('Lesson added!', 'success');
+}
+
+function filterLessons() {
+  renderLessons();
+}
+
+// ===================== TOPICS =====================
+function renderTopics() {
+  const container = document.getElementById('topicGrid');
+  const topicData = {};
+  state.topics.forEach(t => topicData[t] = { total: 0, completed: 0, inProgress: 0 });
+  state.lessons.forEach(l => {
+    if (topicData[l.topic]) {
+      topicData[l.topic].total++;
+      if (l.status === 'completed') topicData[l.topic].completed++;
+      else if (l.status === 'in-progress') topicData[l.topic].inProgress++;
+    }
+  });
+
+  let html = '';
+  let colorIdx = 0;
+  for (const [topic, data] of Object.entries(topicData)) {
+    const percent = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+    html += `
+      <div class="topic-card" onclick="filterByTopic('${escapeHtml(topic)}')">
+        <div class="topic-header">
+          <div class="topic-name">${escapeHtml(topic)}</div>
+          <div class="topic-count">${data.completed}/${data.total}</div>
+        </div>
+        <div class="topic-bar-bg">
+          <div class="topic-bar-fill topic-color-${colorIdx % 17}" style="width:${percent}%"></div>
+        </div>
+        <div class="topic-stats">
+          <span>${percent}% complete</span>
+          <span>${data.inProgress} in progress</span>
+        </div>
+      </div>
+    `;
+    colorIdx++;
+  }
+  container.innerHTML = html;
+}
+
+function filterByTopic(topic) {
+  showSection('lessons');
+  document.getElementById('filterTopic').value = topic;
+  filterLessons();
+}
+
+// ===================== PRACTICE =====================
+function renderPractice() {
+  const statusFilter = document.getElementById('filterPracticeStatus').value;
+  const diffFilter = document.getElementById('filterPracticeDifficulty').value;
+
+  let filtered = state.practice.filter(p => {
+    if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+    if (diffFilter !== 'all' && p.difficulty !== diffFilter) return false;
+    return true;
+  });
+
+  const container = document.getElementById('practiceList');
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">💻</div><div class="empty-state-title">No practice tasks</div><p>Add your first coding challenge</p></div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(p => {
+    const diffClass = 'difficulty-' + p.difficulty.toLowerCase();
+    const statusLabels = { 'not-started': '⬜ Not Started', 'in-progress': '🟡 In Progress', 'completed': '✅ Completed' };
+    const dateStr = p.dateCompleted ? formatDate(p.dateCompleted) : '';
+    return `
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-name">${escapeHtml(p.name)}</div>
+          <span class="status-badge ${p.status === 'completed' ? 'status-completed' : (p.status === 'in-progress' ? 'status-in-progress' : 'status-not-started')}">${statusLabels[p.status]}</span>
+        </div>
+        <div class="item-desc">${escapeHtml(p.notes || 'No notes yet')}</div>
+        <div class="item-meta">
+          <span class="${diffClass}">● ${p.difficulty}</span>
+          ${dateStr ? '<span>📅 ' + dateStr + '</span>' : ''}
+          ${p.link ? '<span>🔗 <a href="' + p.link + '" target="_blank" style="color:var(--accent-blue);text-decoration:none;">GitHub</a></span>' : ''}
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-sm btn-success" onclick="togglePracticeStatus(${p.id})">${p.status === 'completed' ? '↩ Undo' : '✓ Complete'}</button>
+          <button class="btn btn-sm btn-ghost" onclick="editPractice(${p.id})">Edit</button>
+          <button class="btn btn-sm btn-ghost" onclick="deletePractice(${p.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function togglePracticeStatus(id) {
+  const p = state.practice.find(x => x.id === id);
+  if (!p) return;
+  if (p.status === 'completed') {
+    p.status = 'not-started';
+    p.dateCompleted = null;
+  } else {
+    p.status = 'completed';
+    p.dateCompleted = new Date().toISOString();
+    showToast('Practice completed! 💪', 'success');
+  }
+  saveState();
+  renderAll();
+}
+
+function openPracticeModal(id = null) {
+  currentPracticeId = id;
+  if (id) {
+    const p = state.practice.find(x => x.id === id);
+    document.getElementById('practiceModalTitle').textContent = 'Edit Practice Task';
+    document.getElementById('practiceModalName').value = p.name;
+    document.getElementById('practiceModalDifficulty').value = p.difficulty;
+    document.getElementById('practiceModalStatus').value = p.status;
+    document.getElementById('practiceModalNotes').value = p.notes || '';
+    document.getElementById('practiceModalLink').value = p.link || '';
+  } else {
+    document.getElementById('practiceModalTitle').textContent = 'Add Practice Task';
+    document.getElementById('practiceModalName').value = '';
+    document.getElementById('practiceModalDifficulty').value = 'Easy';
+    document.getElementById('practiceModalStatus').value = 'not-started';
+    document.getElementById('practiceModalNotes').value = '';
+    document.getElementById('practiceModalLink').value = '';
+  }
+  openModal('practiceModal');
+}
+
+function editPractice(id) { openPracticeModal(id); }
+
+function savePractice() {
+  const name = document.getElementById('practiceModalName').value.trim();
+  if (!name) { showToast('Please enter a name', 'error'); return; }
+  const data = {
+    name,
+    difficulty: document.getElementById('practiceModalDifficulty').value,
+    status: document.getElementById('practiceModalStatus').value,
+    notes: document.getElementById('practiceModalNotes').value,
+    link: document.getElementById('practiceModalLink').value.trim()
+  };
+  if (currentPracticeId) {
+    const p = state.practice.find(x => x.id === currentPracticeId);
+    Object.assign(p, data);
+    if (data.status === 'completed' && !p.dateCompleted) p.dateCompleted = new Date().toISOString();
+    else if (data.status !== 'completed') p.dateCompleted = null;
+  } else {
+    const maxId = state.practice.length > 0 ? Math.max(...state.practice.map(p => p.id)) : 0;
+    state.practice.push({ id: maxId + 1, ...data, dateCompleted: data.status === 'completed' ? new Date().toISOString() : null });
+  }
+  saveState();
+  closeModal('practiceModal');
+  renderAll();
+  showToast('Practice task saved!', 'success');
+}
+
+function deletePractice(id) {
+  if (!confirm('Delete this practice task?')) return;
+  state.practice = state.practice.filter(p => p.id !== id);
+  saveState();
+  renderAll();
+  showToast('Deleted', 'info');
+}
+
+// ===================== PROJECTS =====================
+function renderProjects() {
+  const container = document.getElementById('projectList');
+  if (state.projects.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">🚀</div><div class="empty-state-title">No projects yet</div><p>Add your first project</p></div>`;
+    return;
+  }
+  container.innerHTML = state.projects.map(p => {
+    const statusLabels = { 'not-started': '⬜ Not Started', 'in-progress': '🟡 In Progress', 'completed': '✅ Completed' };
+    return `
+      <div class="item-card">
+        <div class="item-header">
+          <div class="item-name">${escapeHtml(p.name)}</div>
+          <span class="status-badge ${p.status === 'completed' ? 'status-completed' : (p.status === 'in-progress' ? 'status-in-progress' : 'status-not-started')}">${statusLabels[p.status]}</span>
+        </div>
+        <div class="item-desc">${escapeHtml(p.description || '')}</div>
+        <div class="item-meta">
+          <span>🛠 ${escapeHtml(p.tech || 'N/A')}</span>
+          <span>📊 ${p.percent || 0}%</span>
+        </div>
+        <div class="topic-bar-bg" style="margin-bottom:14px;">
+          <div class="topic-bar-fill topic-color-2" style="width:${p.percent || 0}%"></div>
+        </div>
+        <div class="item-actions">
+          ${p.github ? '<a href="' + p.github + '" target="_blank" class="btn btn-sm btn-ghost">GitHub</a>' : ''}
+          ${p.demo ? '<a href="' + p.demo + '" target="_blank" class="btn btn-sm btn-ghost">Live Demo</a>' : ''}
+          <button class="btn btn-sm btn-ghost" onclick="editProject(${p.id})">Edit</button>
+          <button class="btn btn-sm btn-ghost" onclick="deleteProject(${p.id})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openProjectModal(id = null) {
+  currentProjectId = id;
+  if (id) {
+    const p = state.projects.find(x => x.id === id);
+    document.getElementById('projectModalTitle').textContent = 'Edit Project';
+    document.getElementById('projectModalName').value = p.name;
+    document.getElementById('projectModalDesc').value = p.description || '';
+    document.getElementById('projectModalTech').value = p.tech || '';
+    document.getElementById('projectModalStatus').value = p.status;
+    document.getElementById('projectModalPercent').value = p.percent || 0;
+    document.getElementById('projectModalGithub').value = p.github || '';
+    document.getElementById('projectModalDemo').value = p.demo || '';
+  } else {
+    document.getElementById('projectModalTitle').textContent = 'Add Project';
+    document.getElementById('projectModalName').value = '';
+    document.getElementById('projectModalDesc').value = '';
+    document.getElementById('projectModalTech').value = '';
+    document.getElementById('projectModalStatus').value = 'not-started';
+    document.getElementById('projectModalPercent').value = 0;
+    document.getElementById('projectModalGithub').value = '';
+    document.getElementById('projectModalDemo').value = '';
+  }
+  openModal('projectModal');
+}
+
+function editProject(id) { openProjectModal(id); }
+
+function saveProject() {
+  const name = document.getElementById('projectModalName').value.trim();
+  if (!name) { showToast('Please enter a project name', 'error'); return; }
+  const data = {
+    name,
+    description: document.getElementById('projectModalDesc').value,
+    tech: document.getElementById('projectModalTech').value,
+    status: document.getElementById('projectModalStatus').value,
+    percent: parseInt(document.getElementById('projectModalPercent').value) || 0,
+    github: document.getElementById('projectModalGithub').value.trim(),
+    demo: document.getElementById('projectModalDemo').value.trim()
+  };
+  if (currentProjectId) {
+    const p = state.projects.find(x => x.id === currentProjectId);
+    Object.assign(p, data);
+  } else {
+    const maxId = state.projects.length > 0 ? Math.max(...state.projects.map(p => p.id)) : 0;
+    state.projects.push({ id: maxId + 1, ...data });
+  }
+  saveState();
+  closeModal('projectModal');
+  renderAll();
+  showToast('Project saved!', 'success');
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project?')) return;
+  state.projects = state.projects.filter(p => p.id !== id);
+  saveState();
+  renderAll();
+  showToast('Deleted', 'info');
+}
+
+// ===================== NOTES =====================
+function renderNotes() {
+  const container = document.getElementById('notesList');
+  if (state.notes.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">📝</div><div class="empty-state-title">No notes yet</div><p>Save your first JavaScript concept</p></div>`;
+    return;
+  }
+  container.innerHTML = state.notes.slice().reverse().map(n => `
+    <div class="note-card">
+      <button class="note-delete" onclick="deleteNote(${n.id})">🗑</button>
+      <div class="note-topic">${escapeHtml(n.topic)}</div>
+      <div class="note-title">${escapeHtml(n.title)}</div>
+      <div class="note-content">${escapeHtml(n.content)}</div>
+      <div class="note-date">${formatDate(n.dateCreated)}</div>
+    </div>
+  `).join('');
+}
+
+function openNoteModal(id = null) {
+  currentNoteId = id;
+  if (id) {
+    const n = state.notes.find(x => x.id === id);
+    document.getElementById('noteModalTitle').textContent = 'Edit Note';
+    document.getElementById('noteModalTopic').value = n.topic;
+    document.getElementById('noteModalTitleInput').value = n.title;
+    document.getElementById('noteModalContent').value = n.content;
+  } else {
+    document.getElementById('noteModalTitle').textContent = 'Add Note';
+    document.getElementById('noteModalTopic').value = '';
+    document.getElementById('noteModalTitleInput').value = '';
+    document.getElementById('noteModalContent').value = '';
+  }
+  openModal('noteModal');
+}
+
+function saveNote() {
+  const topic = document.getElementById('noteModalTopic').value.trim();
+  const title = document.getElementById('noteModalTitleInput').value.trim();
+  const content = document.getElementById('noteModalContent').value.trim();
+  if (!topic || !title) { showToast('Please fill topic and title', 'error'); return; }
+  if (currentNoteId) {
+    const n = state.notes.find(x => x.id === currentNoteId);
+    n.topic = topic; n.title = title; n.content = content;
+  } else {
+    const maxId = state.notes.length > 0 ? Math.max(...state.notes.map(n => n.id)) : 0;
+    state.notes.push({ id: maxId + 1, topic, title, content, dateCreated: new Date().toISOString() });
+  }
+  saveState();
+  closeModal('noteModal');
+  renderAll();
+  showToast('Note saved!', 'success');
+}
+
+function deleteNote(id) {
+  if (!confirm('Delete this note?')) return;
+  state.notes = state.notes.filter(n => n.id !== id);
+  saveState();
+  renderAll();
+  showToast('Deleted', 'info');
+}
+
+// ===================== STATISTICS =====================
+function renderStats() {
+  document.getElementById('statTotalLessons2').textContent = state.lessons.length;
+  document.getElementById('statPractice2').textContent = state.practice.length;
+  document.getElementById('statProjects2').textContent = state.projects.length;
+  document.getElementById('statNotes2').textContent = state.notes.length;
+
+  // Weekly chart
+  const weeks = {};
+  state.lessons.forEach(l => {
+    if (l.dateCompleted) {
+      const d = new Date(l.dateCompleted);
+      const key = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      weeks[key] = (weeks[key] || 0) + 1;
+    }
+  });
+  const weekKeys = Object.keys(weeks).slice(-8);
+  const weekVals = weekKeys.map(k => weeks[k]);
+  const maxWeek = Math.max(...weekVals, 1);
+
+  document.getElementById('weeklyChart').innerHTML = `
+    <div class="bar-chart">${weekKeys.map((k, i) => `
+      <div class="bar-item">
+        <div class="bar-value">${weekVals[i]}</div>
+        <div class="bar" style="height:${(weekVals[i] / maxWeek) * 140}px"></div>
+        <div class="bar-label">${k}</div>
+      </div>
+    `).join('')}</div>
+  `;
+
+  // Topic chart
+  const topicData = {};
+  state.topics.forEach(t => topicData[t] = 0);
+  state.lessons.forEach(l => { if (l.status === 'completed' && topicData[l.topic] !== undefined) topicData[l.topic]++; });
+  const tKeys = Object.keys(topicData).filter(k => topicData[k] > 0 || state.lessons.some(l => l.topic === k));
+  const tVals = tKeys.map(k => topicData[k]);
+  const maxT = Math.max(...tVals, 1);
+
+  document.getElementById('topicChart').innerHTML = `
+    <div class="bar-chart">${tKeys.slice(0, 8).map((k, i) => `
+      <div class="bar-item">
+        <div class="bar-value">${tVals[i]}</div>
+        <div class="bar" style="height:${(tVals[i] / maxT) * 140}px"></div>
+        <div class="bar-label" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60px;" title="${escapeHtml(k)}">${k.split(' ')[0]}</div>
+      </div>
+    `).join('')}</div>
+  `;
+
+  // Activity chart (last 14 days)
+  const activity = {};
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    activity[d.toDateString()] = 0;
+  }
+  state.lessons.forEach(l => {
+    if (l.dateCompleted) {
+      const ds = new Date(l.dateCompleted).toDateString();
+      if (activity[ds] !== undefined) activity[ds]++;
+    }
+  });
+  state.practice.forEach(p => {
+    if (p.dateCompleted) {
+      const ds = new Date(p.dateCompleted).toDateString();
+      if (activity[ds] !== undefined) activity[ds]++;
+    }
+  });
+  const aKeys = Object.keys(activity);
+  const aVals = Object.values(activity);
+  const maxA = Math.max(...aVals, 1);
+
+  document.getElementById('activityChart').innerHTML = `
+    <div class="bar-chart" style="height:120px;">${aKeys.map((k, i) => `
+      <div class="bar-item">
+        <div class="bar" style="height:${(aVals[i] / maxA) * 80}px; ${aVals[i] > 0 ? 'background:linear-gradient(to top, var(--accent-green), var(--accent-cyan));' : ''}"></div>
+        <div class="bar-label">${new Date(k).getDate()}</div>
+      </div>
+    `).join('')}</div>
+  `;
+}
+
+// ===================== EXPORT / IMPORT / RESET =====================
+function exportData() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'js-progress-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Progress exported!', 'success');
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.lessons && data.practice && data.projects && data.notes) {
+        state = data;
+        saveState();
+        renderAll();
+        showToast('Progress imported successfully!', 'success');
+      } else {
+        showToast('Invalid backup file', 'error');
+      }
+    } catch (err) {
+      showToast('Error reading file', 'error');
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function confirmReset() {
+  document.getElementById('confirmTitle').textContent = 'Reset All Progress';
+  document.getElementById('confirmText').textContent = 'This will erase all your progress, notes, practice, and projects. This cannot be undone.';
+  document.getElementById('confirmBtn').onclick = () => {
+    localStorage.removeItem('jsTrackerState');
+    initDefaultState();
+    closeModal('confirmModal');
+    renderAll();
+    showToast('All progress reset', 'info');
+  };
+  openModal('confirmModal');
+}
+
+// ===================== UTILS =====================
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderAll() {
+  renderDashboard();
+  renderLessons();
+  renderTopics();
+  renderPractice();
+  renderProjects();
+  renderNotes();
+  renderStats();
+}
+
+// Populate topic filter
+function populateTopicFilter() {
+  const select = document.getElementById('filterTopic');
+  select.innerHTML = '<option value="all">All Topics</option>' + state.topics.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+}
+
+// Scroll top
+window.addEventListener('scroll', () => {
+  document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 300);
+});
+
+// Init
+loadState();
+populateTopicFilter();
+renderAll();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+  }
+});
+</script>
+</body>
+</html>
