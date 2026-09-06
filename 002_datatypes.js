@@ -7,3 +7,5 @@ console.log(typeof null)
 // null => standalone value  , it is an object
 
 console.log(typeof undefined)
+ 
+
