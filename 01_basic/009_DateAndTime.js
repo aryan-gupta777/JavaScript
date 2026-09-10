@@ -29,7 +29,11 @@ console.log(ddmmyy.getTime());
 
 console.log(Math.floor(myTimeStamp/1000)); //removed milisecond  
 
+
+// customize the formate
 mydate.toLocaleString('default',{
     weekday: "long",
 })
+
+console.log(mydate.toLocaleString());
 

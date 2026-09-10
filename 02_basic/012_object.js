@@ -17,7 +17,7 @@ const user={
 }
 
 // console.log(user,"\n");
-// console.log(user["full name"]);
+// console.log(user["full name"]) ;
 
 // console.log(user.lastLogginDay);
 // console.log(user.lastLogginDay[0]); // can access the element fro the array
