@@ -20,7 +20,7 @@ function TwoAddNumber(num1,num2){
 
 // console.log(TwoAddNumber(5,3));
 
-function LoginUserMessage(username){
+function LoginUserMessage(username="sam"){  // sam is default name when parameter is not passed
     if(!username){  //(username === undefine)
      console.log('please enter your name');
      return;
@@ -53,10 +53,7 @@ function handleObject(anyObject){
 
 // handleObject(user)
 
-handleObject({
-    username:"aryan",
-    age:22
-})
+handleObject({username:"aryan", age:22})
 
 
 const arrNewarray=[200,300,400,500]
