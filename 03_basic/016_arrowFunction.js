@@ -33,9 +33,12 @@ const user = {
 
 // chai()
 
+
+//this only works in object 
+
 const chai =() => {
     username="Aryan"
-    console.log(this);
+    console.log(this.username);
     
 }
 
@@ -51,6 +54,16 @@ const chai =() => {
 const addTwo = (num1, num2) => ({username: "aryan"})
 
 // console.log(addTwo(2,5));
+
+
+//"arguments" keyword
+const addNumber=(...num)=>{  //used by spread operator
+    console.log(num);
+    
+}
+
+// addNumber(1,2,3,4)
+
 
 
 //notes
