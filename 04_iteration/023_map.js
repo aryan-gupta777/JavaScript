@@ -45,3 +45,6 @@ const myObject={
 // }
 // To iterate over an object we use (forin loop)
 
+for (const i in myObject) {
+    console.log(i,":", myObject[i]);
+}
