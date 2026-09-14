@@ -39,7 +39,9 @@ const myObject={
     game2:'spiderman'
 }
 
-for (const [key,value] of Object.entries(myObject)) {
-    console.log(key ,":-",value);
-}
+// the down code will not work (forof loop) beacuse it cannot iterate the object
+// for (const [key,value] of Object.entries(myObject)) {
+//     console.log(key ,":-",value);
+// }
+// To iterate over an object we use (forin loop)
 
