@@ -57,3 +57,9 @@ console.log(addtwo(6))// will show error (hosting)
 const addtwo=function(num){  // exppression 
     return num+2;
 }
+
+
+// ----------------------------Hoisting------------------------ 
+// hoisting in JavaScript is when variable and function declarations are moved to the
+// top of the code before it runs, so you can use them before you declare them. Just remember,
+// with let and const, there's a catch called the "temporal dead zone."
