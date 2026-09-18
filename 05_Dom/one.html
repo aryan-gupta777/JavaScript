@@ -1,25 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>dom</title>
     <style>
-        .bg-black{
-            background-color: #212121;
-            color: #ddd;
-        }
+      .bg-black {
+        background-color: #212121;
+        color: #ddd;
+      }
     </style>
-</head>
-<body class="bg-black">
-    <div >
-        <h1 id="title" class="heading">DOM LEARNING ON CHAI AND CODE</h1>
-        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
+  </head>
+  <body class="bg-black">
+    <div>
+      <h1 id="title" class="heading">
+        DOM LEARNING ON CHAI AND CODE
+        <span style="display: none">text_context_hidden</span>
+      </h1>
+      <h2>1 Lorem ipsum dolor sit.</h2>
+      <h2>2 Lorem ipsum dolor sit.</h2>
+      <h2>3 Lorem ipsum dolor sit.</h2>
+      <input type="password" id="" />
+      <ul>
+        <li>one</li>
+        <li>two</li>
+        <li>three</li>
+      </ul>
+      <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
     </div>
-    
-</body>
+  </body>
 </html>
-
 
 <!-- 
 //--- browser console ---
@@ -35,3 +45,97 @@
 // step 2 - go to console
 // step 3 - document.getElementById('firstHeading').innerHTML ="<h1>hello</h1>" 
 // header change -->
+
+<!-- >
+ document.getElementById('title')
+< <h1 id="title" class="test heading">DOM LEARNING ON CHAI AND CODE</h1>
+
+> document.getElementById('title').class
+< undefined
+
+> document.getElementById('title').id
+< 'title'
+
+> document.getElementById('title').className
+< 'heading'
+
+> document.getElementById('title').getAttribute("class")
+< 'heading'
+> document.getElementById('title').getAttribute("id")
+< 'title'
+
+
+> document.getElementById("title").setAttribute("class","test heading")
+< undefined
+
+> // setAttribute is use to overwrite
+
+< undefined
+ 
+------------------------------------------------------------------------------------------------
+> const title=document.getElementById("title")
+< undefined
+
+> title
+
+< <h1 id="title" class="test heading">DOM LEARNING ON CHAI AND CODE</h1>
+
+> title.id
+
+< 'title'
+
+> title.className
+
+< 'test heading' 
+----------------------------------------------------------------->
+
+<!-- 
+title.textContent
+'DOM LEARNING ON CHAI AND CODE text_context_hidden'
+title.innerText
+'DOM LEARNING ON CHAI AND CODE'
+title.innerHTML
+'DOM LEARNING ON CHAI AND CODE <span style="display: none;">text_context_hidden</span> 
+------------------------------------------------------------------>
+
+<!-- 
+document.querySelector('input[type="password"]')
+<input type=​"password" id>​
+
+document.querySelector("ul")
+<ul>​…​</ul>​
+
+mytable.querySelector("li")
+VM3744:1 Uncaught ReferenceError: mytable is not defined
+    at <anonymous>:1:1
+(anonymous) @ VM3744:1
+
+const mytable = document.querySelector("ul")
+undefined
+
+mytable.querySelector("li")
+<li>​…​</li>​
+
+------------------------------------------------------------------->
+
+
+<!-- 
+document.querySelectorAll("ul")
+NodeList [ul]0: ullength: 1[[Prototype]]: NodeList
+
+document.querySelectorAll("li")
+NodeList(3) [li, li, li]
+
+const x = document.querySelectorAll("li")
+undefined
+
+x
+NodeList(3) [li, li, li]0: li1: li2: lilength: 3[[Prototype]]: NodeList
+
+// nodelist is not an array 
+
+x[0].innerText="aryan"
+'aryan'
+x[1].style.color="green"
+'green'
+ ------------------------------------------------------------------->
