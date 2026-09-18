@@ -22,14 +22,17 @@
       <h2>3 Lorem ipsum dolor sit.</h2>
       <input type="password" id="" />
       <ul>
-        <li>one</li>
-        <li>two</li>
-        <li>three</li>
+        <li class="list-item">one</li>
+        <li class="list-item">two</li>
+        <li class="list-item">three</li>
       </ul>
       <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit.</p>
     </div>
   </body>
 </html>
+
+
+<!------------------------- https://www.w3schools.com/js/js_htmldom.asp--------------------------->
 
 <!-- 
 //--- browser console ---
@@ -72,7 +75,7 @@
 
 < undefined
  
-------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------
 > const title=document.getElementById("title")
 < undefined
 
@@ -90,6 +93,8 @@
 ----------------------------------------------------------------->
 
 <!-- 
+// diff b/w textcontent and innertext
+
 title.textContent
 'DOM LEARNING ON CHAI AND CODE text_context_hidden'
 title.innerText
@@ -139,3 +144,31 @@ x[0].innerText="aryan"
 x[1].style.color="green"
 'green'
  ------------------------------------------------------------------->
+
+
+<!-- 
+// pick all the element and hop in 
+
+document.querySelectorAll("h2")
+NodeList(16) [h2#mw-toc-heading, h2#History, h2#Film_theory, h2#Industry, h2#Associated_fields, h2#Terminology, h2#Culture, h2#Production, h2#Distribution, h2#Animation, h2#See_also, h2#Notes, h2#Citations, h2#References, h2#Further_reading, h2#External_links]
+
+const x=document.querySelectorAll("h2")
+undefined
+
+x[2].innerText
+'Film theory' 
+-------------------------------------------------------------------->
+
+<!--
+// convert all the properities of element of the same class together 
+
+ const x=document.querySelectorAll(".vector-toc-text")
+undefined
+
+x.forEach(function (i){
+i.innerText="aryan"
+    i.style.color="green"
+    i.style.padding="12px"
+}) 
+ 
+--------------------------------------------------------------------->
