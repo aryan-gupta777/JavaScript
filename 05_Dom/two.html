@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body style="background-color: #212121; color: #fff">
+    <div class="parent">
+        <!-- checking the node list see the line no 40 -->
+      <div class="days">monday</div>
+      <div class="days">tuesday</div>
+      <div class="days">wednesday</div>
+      <div class="days">thursday</div>
+    </div>
+  </body>
+  <script>
+    const p = document.querySelector(".parent")
+    //    console.log(p);  // <div class="parent">…</div>
+    //    console.log(p.children);  // two.html:19 HTMLCollection(4) [div.days, div.days, div.days, div.days]
+    //    console.log(p.children[1].innerText);   // tuesday
+
+    //parent don't give the html collection
+    //parent.children will
+
+    for (let i = 0; i < p.children.length; i++) {
+    //   console.log(p.children[i].innerHTML)
+    }
+
+    p.children[1].style.color="green"
+
+    // console.log(p.firstElementChild);
+    // console.log(p.lastElementChild);
+    
+    const dayone=document.querySelector(".days")
+    // console.log(dayone);
+    // console.log(dayone.parentElement);
+    // console.log(dayone.nextElementSibling.innerHTML);
+
+     console.log("node : ",p.childNodes);
+     
+
+    
+
+  </script>
+</html>
