@@ -20,7 +20,7 @@ const user={
 // console.log(user["full name"]) ;
 
 // console.log(user.lastLogginDay);
-// console.log(user.lastLogginDay[0]); // can access the element fro the array
+// console.log(user.lastLogginDay[0]); // can access the element from the array
 
 // console.log(user["isLoggedIn"]);
 // console.log(user[mySym]); // Accessing the property also requires bracket notation
@@ -30,7 +30,7 @@ user.email="prince@gmail.com"
 
 // console.log(user.email);
 
-// Object.freeze(user)  // is is use to make your object immutable
+// Object.freeze(user)  // it is use to make your object immutable
 user.email="prince123@gmail.com"
 
 
