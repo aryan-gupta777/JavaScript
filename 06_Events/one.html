@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>html Events </title>
+</head>
+<body style="background-color: #414141; color: aliceblue;">
+    <h2>Amazing image</h2>
+    <div >
+        <ul id="images">
+            <li><img width="200px" id="photoshop" src="https://images.pexels.com/photos/3561339/pexels-photo-3561339.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="photoshop"></li>
+            <li><img width="200px" id="japan" src="https://images.pexels.com/photos/3532553/pexels-photo-3532553.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt=""></li>
+            <li><img width="200px" id="river" src="https://images.pexels.com/photos/3532551/pexels-photo-3532551.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt=""></li>
+            <li><img width="200px" id="owl" src="https://images.pexels.com/photos/3532552/pexels-photo-3532552.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="" ></li>
+            <li><img width="200px" id="prayer" src="https://images.pexels.com/photos/2522671/pexels-photo-2522671.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt=""></li>
+            <li><a style="color: aliceblue;" href="https://google.com" target="_blank" id="google">Google</a></li>
+        </ul>
+   </div>
+</body>
+<script>
+    // document.getElementById('owl').onclick = function(){
+    //     alert("owl clicked")
+    // }
+
+     // attachEvent()
+    // jQuery - on
+
+    // type, timestamp, defaultPrevented
+    // target, toElement, srcElement, currentTarget,
+    // clientX, clientY, screenX, screenY
+    // altkey, ctrlkey, shiftkey, keyCode
+
+    /*-----------------------------------------------------------------------------------------------------------------------
+
+    // Event propagation in JavaScript defines the order in which event handlers are triggered 
+    // when an event occurs on a nested element in the Document Object Model (DOM)
+
+    // Event bubbling is a DOM event propagation mechanism in JavaScript where an event triggers first on
+    // the deepest target element and then travels (or "bubbles") upward through its ancestors in the DOM tree
+
+    // What is the difference between bubbling and capturing? 
+    // bubbling goes from the target element up to the root,
+    // while capturing goes from the root down to the target element
+    // for bubbling = true
+    // for capturing = false
+
+    -------------------------------------------------------------------------------------------------------------------------*/
+
+    document.getElementById("images").addEventListener("click",function(e){
+       console.log("clicked inside the ul");
+    },false)
+
+    document.getElementById("owl").addEventListener("click",function(e){
+        console.log("owl clicked");
+        e.stopPropagation()
+        //  e.stopPropagation() method prevents an event from traveling (propagating) any further up or down the DOM tree during the event flow.
+        //  It is most commonly used to stop **event bubbling**,
+        //  where an event triggered on a child element automatically triggers the same event handlers on its parent elements.
+    })
+
+    // document.getElementById('google').addEventListener('click',function(e){
+    //     e.preventDefault();
+    //     e.stopPropagation()
+    //     console.log("google clicked");
+    // }, false)
+
+    document.querySelector("#images").addEventListener("click",function (e) {
+        console.log(e.target.tagName);
+
+        if(e.target.tagName==="IMG"){
+            let removeit=e.target.parentNode  //(parentnode means -> <li> ..img </li>)
+            console.log(e.target.id);
+            removeit.remove()
+        }
+        
+    })
+
+
+
+
+   
+    //removeIt.parentNode.removeChild(removeIt)
+</script>
+</html>
