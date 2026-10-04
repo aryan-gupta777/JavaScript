@@ -63,5 +63,30 @@ walkDog().then(value => {console.log(value); return cleanKitchen()})
          .then(value => {console.log(value); return takeOutTrach()})
          .then(value => {console.log(value); console.log("you finished all the chores !")})
          .catch(error => console.log(error));
-         
-        
+
+
+// if the first promise fails then the rest of the comming promises will not work 
+// ex - if the walkdog() give the false then the rest of the cleankitchen and takeouttrack will not work 
+
+
+// promise
+// .then(()=>{ })    //handle success
+// .catch(() => { }) //handle error
+// .finally(() =>{ })//run once finished
+
+
+
+/*--------------async syntax---------------
+async function myfun(){
+    try {
+        const result = await mypromise;  //handle success
+    } 
+    catch (error){
+        //handle error
+    }
+    finally{
+        // run once finished
+    }
+}
+
+---------------------------------------------*/
