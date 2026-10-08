@@ -1,8 +1,8 @@
 // Promise = An Object that manages asynchronous operations.
 //                    Wrap a Promise Object around {asynchronous code}
 //                    "I promise to return a value"
-//                    pending -> resolve or reject 
-//                    new promise((resolve,reject) => {asynchronous code}) 
+//                    pending -> resolve or reject
+//                    new promise((resolve,reject) => {asynchronous code})
 //
 
 // DO THESE CHORES IN ORDER
